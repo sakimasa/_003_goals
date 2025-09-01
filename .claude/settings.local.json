@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/Masahiko1989/アプリ開発/Flutter_Apps/_003_goals/lib/widgets/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

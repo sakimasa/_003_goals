@@ -1,0 +1,7 @@
+# This is a temporary file to track what we need to add to Info.plist
+# Notification permissions
+NSUserNotificationUsageDescription: This app needs notification permission to remind you about your goal progress.
+NSUserNotificationAlertUsageDescription: This app shows notifications to help you track your goals.
+
+# Required for iOS 14+
+NSAdvertisingIdentifierUsageDescription: This identifier will be used to deliver personalized ads to you.
