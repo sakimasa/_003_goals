@@ -45,8 +45,8 @@ dependencies:
   # Notifications (temporarily disabled for iOS testing)
   # flutter_local_notifications: ^17.2.2
   
-  # Ads (temporarily disabled for iOS testing)
-  # google_mobile_ads: ^5.1.0
+  # Ads
+  google_mobile_ads: ^5.1.0
   
   # In-app purchases (temporarily disabled for iOS testing)  
   # in_app_purchase: ^3.2.0

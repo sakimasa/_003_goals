@@ -5,6 +5,7 @@ import '../providers/settings_provider.dart';
 import '../models/goal.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_detail_dialog.dart';
+import '../widgets/ad_banner_widget.dart';
 import 'main_navigation.dart';
 import 'goal_edit_screen.dart';
 import 'goal_detail_screen.dart';
@@ -139,21 +140,7 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
   }
 
   Widget _buildAdBanner() {
-    return Container(
-      height: 60,
-      width: double.infinity,
-      color: Colors.grey.shade200,
-      child: const Center(
-        child: Text(
-          '広告スペース\nプレミアムで非表示',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
+    return const AdBannerWidget();
   }
 
   Widget _buildHeader(int goalCount, bool isPremium) {

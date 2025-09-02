@@ -6,6 +6,7 @@ import '../providers/settings_provider.dart';
 import '../models/goal.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_progress_dialog.dart';
+import '../widgets/ad_banner_widget.dart';
 import 'main_navigation.dart';
 import 'settings_screen.dart';
 
@@ -164,21 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAdBanner() {
-    return Container(
-      height: 60,
-      width: double.infinity,
-      color: Colors.grey.shade200,
-      child: const Center(
-        child: Text(
-          '広告スペース\nプレミアムで非表示',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
+    return const AdBannerWidget();
   }
 
   void _showTaskProgressDialog(BuildContext context, GoalStep step, Goal? goal) {

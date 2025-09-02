@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'providers/goal_provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/main_navigation.dart';
+import 'services/ad_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize AdMob (only on mobile platforms)
+  if (!kIsWeb) {
+    try {
+      await AdService().initialize();
+    } catch (e) {
+      if (kDebugMode) {
+        print('AdMob initialization failed: $e');
+      }
+    }
+  }
   
   // Initialize database for web
   if (kIsWeb) {
