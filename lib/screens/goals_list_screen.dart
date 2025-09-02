@@ -95,47 +95,58 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.flag_outlined,
-            size: 80,
-            color: Colors.lightBlue.shade300,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'まだ目標が設定されていません',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        return Column(
+          children: [
+            if (!settingsProvider.settings.isPremium) _buildAdBanner(),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.flag_outlined,
+                      size: 80,
+                      color: Colors.lightBlue.shade300,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'まだ目標が設定されていません',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '目標作成画面から新しい目標を設定しましょう',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        MainNavigationInherited.of(context)?.navigateToIndex(1);
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('目標を作成する'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightBlue.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '目標作成画面から新しい目標を設定しましょう',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () {
-              MainNavigationInherited.of(context)?.navigateToIndex(1);
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('目標を作成する'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.lightBlue.shade400,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 

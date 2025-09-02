@@ -11,6 +11,7 @@ class AppSettings {
   final int notificationHour;
   final int notificationMinute;
   final bool isPremium;
+  final bool isFirstLaunch;
 
   AppSettings({
     this.notificationsEnabled = true,
@@ -18,6 +19,7 @@ class AppSettings {
     this.notificationHour = 9,
     this.notificationMinute = 0,
     this.isPremium = false,
+    this.isFirstLaunch = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -27,6 +29,7 @@ class AppSettings {
       'notification_hour': notificationHour,
       'notification_minute': notificationMinute,
       'is_premium': isPremium,
+      'is_first_launch': isFirstLaunch,
     };
   }
 
@@ -37,6 +40,7 @@ class AppSettings {
       notificationHour: json['notification_hour'] ?? 9,
       notificationMinute: json['notification_minute'] ?? 0,
       isPremium: json['is_premium'] ?? false,
+      isFirstLaunch: json['is_first_launch'] ?? true,
     );
   }
 
@@ -46,6 +50,7 @@ class AppSettings {
     int? notificationHour,
     int? notificationMinute,
     bool? isPremium,
+    bool? isFirstLaunch,
   }) {
     return AppSettings(
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
@@ -53,6 +58,7 @@ class AppSettings {
       notificationHour: notificationHour ?? this.notificationHour,
       notificationMinute: notificationMinute ?? this.notificationMinute,
       isPremium: isPremium ?? this.isPremium,
+      isFirstLaunch: isFirstLaunch ?? this.isFirstLaunch,
     );
   }
 

@@ -5,6 +5,7 @@ import 'providers/goal_provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/main_navigation.dart';
+import 'screens/tutorial_screen.dart';
 import 'services/ad_service.dart';
 
 void main() async {
@@ -30,9 +31,14 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -43,33 +49,57 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, child) {
-          return MaterialApp(
-            title: '目標達成アプリ',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.lightBlue.shade300,
-                brightness: Brightness.light,
-              ),
-              useMaterial3: true,
-              appBarTheme: const AppBarTheme(
-                centerTitle: true,
-                elevation: 0,
-              ),
-              cardTheme: CardTheme(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          // Show loading while settings are being initialized
+          if (!settingsProvider.isInitialized || settingsProvider.isLoading) {
+            return MaterialApp(
+              title: '目標達成アプリ',
+              theme: _buildTheme(),
+              home: const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
                 ),
               ),
-              floatingActionButtonTheme: FloatingActionButtonThemeData(
-                backgroundColor: Colors.lightBlue.shade400,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            home: const MainNavigation(),
+              debugShowCheckedModeBanner: false,
+            );
+          }
+
+          if (kDebugMode) {
+            print('App startup - isFirstLaunch: ${settingsProvider.settings.isFirstLaunch}');
+          }
+          
+          return MaterialApp(
+            title: '目標達成アプリ',
+            theme: _buildTheme(),
+            home: settingsProvider.settings.isFirstLaunch 
+                ? const TutorialScreen() 
+                : const MainNavigation(),
             debugShowCheckedModeBanner: false,
           );
         },
+      ),
+    );
+  }
+
+  ThemeData _buildTheme() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.lightBlue.shade300,
+        brightness: Brightness.light,
+      ),
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+      ),
+      cardTheme: CardTheme(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: Colors.lightBlue.shade400,
+        foregroundColor: Colors.white,
       ),
     );
   }

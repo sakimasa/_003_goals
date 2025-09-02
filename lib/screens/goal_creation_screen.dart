@@ -4,6 +4,7 @@ import '../providers/goal_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/goal.dart';
 import '../widgets/goal_creation_stepper.dart';
+import '../widgets/ad_banner_widget.dart';
 import 'main_navigation.dart';
 
 class GoalCreationScreen extends StatefulWidget {
@@ -38,6 +39,7 @@ class _GoalCreationScreenState extends State<GoalCreationScreen> {
         builder: (context, goalProvider, settingsProvider, child) {
           return Column(
             children: [
+              if (!settingsProvider.settings.isPremium) const AdBannerWidget(),
               _buildProgressIndicator(),
               Expanded(
                 child: PageView(
