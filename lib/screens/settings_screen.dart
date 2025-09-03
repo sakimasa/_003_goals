@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/app_settings.dart';
@@ -35,10 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 24),
               _buildPremiumSection(settings),
               const SizedBox(height: 24),
-              if (kDebugMode) ...[
-                _buildDebugSection(settingsProvider),
-                const SizedBox(height: 24),
-              ],
               _buildAboutSection(),
             ],
           );
@@ -202,51 +197,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDebugSection(SettingsProvider settingsProvider) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.bug_report, color: Colors.orange.shade600),
-                const SizedBox(width: 12),
-                const Text(
-                  'デバッグ (開発用)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              title: const Text('チュートリアルをリセット'),
-              subtitle: const Text('次回起動時にチュートリアルを表示'),
-              leading: const Icon(Icons.refresh),
-              onTap: () async {
-                final success = await settingsProvider.resetFirstLaunchFlag();
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('チュートリアルがリセットされました。アプリを再起動してください。')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('リセットに失敗しました')),
-                  );
-                }
-              },
-            ),
-            ListTile(
-              title: Text('初回起動フラグ: ${settingsProvider.settings.isFirstLaunch}'),
-              subtitle: const Text('現在の設定値'),
-              leading: const Icon(Icons.flag),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildAboutSection() {
     return Card(
