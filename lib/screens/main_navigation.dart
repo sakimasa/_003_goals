@@ -50,8 +50,10 @@ class _MainNavigationState extends State<MainNavigation> {
       const PremiumScreen(),
     ];
 
+    // Load data only once during app initialization
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SettingsProvider>().loadSettings();
+      // Settings are already loaded by SettingsProvider constructor
+      // Only load goals here
       context.read<GoalProvider>().loadGoals();
     });
   }

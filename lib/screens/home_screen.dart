@@ -29,10 +29,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Reload data when returning to this screen, but not during build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
+    // Only reload data when navigating back to this screen, not on every build
+    // Check if this is the first time or if we're coming back from another screen
+    if (mounted && ModalRoute.of(context)?.isCurrent == true) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadData();
+      });
+    }
   }
 
   void _loadData() {

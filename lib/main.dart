@@ -11,21 +11,18 @@ import 'services/ad_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize AdMob (only on mobile platforms)
+  // Initialize AdMob and PremiumService (only on mobile platforms)
   if (!kIsWeb) {
     try {
       await AdService().initialize();
+      if (kDebugMode) {
+        print('AdMob initialized successfully');
+      }
     } catch (e) {
       if (kDebugMode) {
         print('AdMob initialization failed: $e');
       }
     }
-  }
-  
-  // Initialize database for web
-  if (kIsWeb) {
-    // For web, we'll use a mock database or implement web-specific storage
-    // This prevents the sqflite initialization error on web
   }
   
   runApp(const MyApp());

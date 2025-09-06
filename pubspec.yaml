@@ -48,11 +48,23 @@ dependencies:
   # Ads
   google_mobile_ads: ^5.1.0
   
-  # In-app purchases (temporarily disabled for iOS testing)  
-  # in_app_purchase: ^3.2.0
+  # In-app purchases
+  in_app_purchase: ^3.2.0
   
   # Date and time
   intl: ^0.19.0
+
+
+  flutter_native_splash: ^2.4.6
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: icon.png
+  android_12:
+    color: "#FFFFFF"
+
+  android_gravity: "center"
+  ios_content_mode: "center"
 
 dev_dependencies:
   flutter_test:

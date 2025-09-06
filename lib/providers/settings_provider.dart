@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_settings.dart';
+import '../services/premium_service.dart';
 
 class SettingsProvider with ChangeNotifier {
   AppSettings _settings = AppSettings();
   bool _isLoading = true;
   bool _isInitialized = false;
+  static bool _premiumServiceInitialized = false;
 
   AppSettings get settings => _settings;
   bool get isLoading => _isLoading;
@@ -30,14 +32,47 @@ class SettingsProvider with ChangeNotifier {
         print('Loading settings - is_first_launch from SharedPreferences: $isFirstLaunch');
       }
       
+      // Initialize premium service only once and check subscription status
+      bool isPremiumFromPurchase = false;
+      if (!kIsWeb && !_premiumServiceInitialized) {
+        try {
+          final premiumService = PremiumService();
+          await premiumService.initialize();
+          isPremiumFromPurchase = premiumService.isPremium;
+          _premiumServiceInitialized = true;
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error initializing premium service: $e');
+          }
+        }
+      } else if (!kIsWeb && _premiumServiceInitialized) {
+        // Use already initialized premium service
+        try {
+          final premiumService = PremiumService();
+          isPremiumFromPurchase = premiumService.isPremium;
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error checking premium status: $e');
+          }
+        }
+      }
+      
+      final storedPremium = prefs.getBool('is_premium') ?? false;
+      final isPremium = isPremiumFromPurchase || storedPremium;
+      
       _settings = AppSettings(
         notificationsEnabled: prefs.getBool('notifications_enabled') ?? true,
         frequency: NotificationFrequency.values[prefs.getInt('frequency') ?? 0],
         notificationHour: prefs.getInt('notification_hour') ?? 9,
         notificationMinute: prefs.getInt('notification_minute') ?? 0,
-        isPremium: prefs.getBool('is_premium') ?? false,
+        isPremium: isPremium,
         isFirstLaunch: isFirstLaunch,
       );
+      
+      // Update stored premium status if needed
+      if (isPremiumFromPurchase && !storedPremium) {
+        await prefs.setBool('is_premium', true);
+      }
     } catch (e) {
       print('Error loading settings: $e');
     } finally {

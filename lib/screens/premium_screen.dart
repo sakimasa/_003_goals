@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/premium_service.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
@@ -96,8 +97,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 const SizedBox(height: 16),
                 _buildFeatureItem(Icons.flag, '無制限の目標作成'),
                 _buildFeatureItem(Icons.block, '広告非表示'),
-                _buildFeatureItem(Icons.notifications, '高度な通知機能'),
-                _buildFeatureItem(Icons.backup, 'データのバックアップ'),
               ],
             ),
           ),
@@ -112,7 +111,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
         children: [
           _buildHeroSection(),
           _buildFeaturesSection(),
-          _buildPricingSection(settingsProvider),
+          _buildComingSoonSection(),
           const SizedBox(height: 32),
         ],
       ),
@@ -139,7 +138,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
           ),
           const SizedBox(height: 16),
           const Text(
-            'プレミアムにアップグレード',
+            'プレミアム機能',
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -148,7 +147,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            '全ての機能を解放して\nさらに効率的に目標を達成しよう',
+            '現在準備中です\nもうしばらくお待ちください',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white70,
@@ -198,19 +197,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
             title: '広告表示',
             free: 'あり',
             premium: 'なし',
-            isPremiumBetter: true,
-          ),
-          _buildComparisonItem(
-            icon: Icons.notifications,
-            title: '通知機能',
-            free: '基本機能のみ',
-            premium: '高度な設定可能',
-          ),
-          _buildComparisonItem(
-            icon: Icons.backup,
-            title: 'データバックアップ',
-            free: 'なし',
-            premium: 'あり',
             isPremiumBetter: true,
           ),
         ],
@@ -357,16 +343,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      '¥',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      '480',
-                      style: TextStyle(
+                    Text(
+                      PremiumService().getPremiumPrice(),
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
@@ -415,8 +394,30 @@ class _PremiumScreenState extends State<PremiumScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () async {
+                  final restored = await PremiumService().restorePurchases();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          restored ? '購入履歴を復元しました' : '復元できる購入がありません',
+                        ),
+                        backgroundColor: restored ? Colors.green : Colors.orange,
+                      ),
+                    );
+                  }
+                },
+                child: const Text('購入を復元'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Text(
-            '※ これはデモ版です。実際の決済は行われません。',
+            '※ テスト環境では実際の決済は行われません。',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -451,28 +452,141 @@ class _PremiumScreenState extends State<PremiumScreen> {
   Future<void> _purchasePremium(SettingsProvider settingsProvider) async {
     setState(() => _isProcessing = true);
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    final success = await settingsProvider.upgradeToPremium();
-
-    if (mounted) {
-      setState(() => _isProcessing = false);
+    try {
+      final premiumService = PremiumService();
+      final purchaseSuccess = await premiumService.purchasePremium();
       
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('プレミアムにアップグレードしました！'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (purchaseSuccess) {
+        // Wait for purchase to complete and then update settings
+        await Future.delayed(const Duration(seconds: 2));
+        final success = await settingsProvider.upgradeToPremium();
+        
+        if (mounted) {
+          setState(() => _isProcessing = false);
+          
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('プレミアムにアップグレードしました！'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
       } else {
+        if (mounted) {
+          setState(() => _isProcessing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('購入がキャンセルされたか失敗しました'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('アップグレードに失敗しました'),
+            content: Text('購入処理でエラーが発生しました'),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
+  }
+
+  Widget _buildComingSoonSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.construction,
+            color: Colors.amber.shade600,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'プレミアム機能 準備中',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'プレミアム機能は現在開発中です。\n準備が整い次第、ご案内いたします。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.blue.shade200,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  '予定している機能',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.flag,
+                      color: Colors.blue.shade600,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('無制限の目標作成'),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.block,
+                      color: Colors.blue.shade600,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('広告非表示'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
