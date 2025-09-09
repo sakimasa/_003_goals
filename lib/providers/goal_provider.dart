@@ -16,7 +16,12 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _goals = await _db.getAllGoals();
+      if (kIsWeb) {
+        // For web, goals are already in memory, just update loading state
+        // No need to fetch from database
+      } else {
+        _goals = await _db.getAllGoals();
+      }
     } catch (e) {
       print('Error loading goals: $e');
     } finally {
@@ -27,11 +32,20 @@ class GoalProvider with ChangeNotifier {
 
   Future<bool> addGoal(Goal goal) async {
     try {
-      final id = await _db.insertGoal(goal);
-      final newGoal = goal.copyWith(id: id);
-      _goals.insert(0, newGoal);
-      notifyListeners();
-      return true;
+      if (kIsWeb) {
+        // For web, generate a simple ID and store in memory
+        final id = _goals.isEmpty ? 1 : _goals.map((g) => g.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
+        final newGoal = goal.copyWith(id: id);
+        _goals.insert(0, newGoal);
+        notifyListeners();
+        return true;
+      } else {
+        final id = await _db.insertGoal(goal);
+        final newGoal = goal.copyWith(id: id);
+        _goals.insert(0, newGoal);
+        notifyListeners();
+        return true;
+      }
     } catch (e) {
       print('Error adding goal: $e');
       return false;
@@ -40,17 +54,33 @@ class GoalProvider with ChangeNotifier {
 
   Future<bool> addStep(GoalStep step) async {
     try {
-      final id = await _db.insertStep(step);
-      final newStep = step.copyWith(id: id);
+      if (kIsWeb) {
+        // For web, generate a simple ID and store in memory
+        final allSteps = _goals.expand((g) => g.steps).toList();
+        final id = allSteps.isEmpty ? 1 : allSteps.map((s) => s.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
+        final newStep = step.copyWith(id: id);
 
-      final goalIndex = _goals.indexWhere((g) => g.id == step.goalId);
-      if (goalIndex != -1) {
-        final updatedSteps = List<GoalStep>.from(_goals[goalIndex].steps)
-          ..add(newStep);
-        _goals[goalIndex] = _goals[goalIndex].copyWith(steps: updatedSteps);
-        notifyListeners();
+        final goalIndex = _goals.indexWhere((g) => g.id == step.goalId);
+        if (goalIndex != -1) {
+          final updatedSteps = List<GoalStep>.from(_goals[goalIndex].steps)
+            ..add(newStep);
+          _goals[goalIndex] = _goals[goalIndex].copyWith(steps: updatedSteps);
+          notifyListeners();
+        }
+        return true;
+      } else {
+        final id = await _db.insertStep(step);
+        final newStep = step.copyWith(id: id);
+
+        final goalIndex = _goals.indexWhere((g) => g.id == step.goalId);
+        if (goalIndex != -1) {
+          final updatedSteps = List<GoalStep>.from(_goals[goalIndex].steps)
+            ..add(newStep);
+          _goals[goalIndex] = _goals[goalIndex].copyWith(steps: updatedSteps);
+          notifyListeners();
+        }
+        return true;
       }
-      return true;
     } catch (e) {
       print('Error adding step: $e');
       return false;

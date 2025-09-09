@@ -16,13 +16,15 @@ class AdService {
   BannerAd? get bannerAd => _bannerAd;
 
   // Test ad unit IDs - replace with your actual ad unit IDs for production
-  static const String _bannerAdUnitId = kDebugMode 
-    ? 'ca-app-pub-3940256099942544/6300978111' // Test banner ad unit ID
-    : 'ca-app-pub-3940256099942544/6300978111'; // Replace with your real ad unit ID
+  static const String _bannerAdUnitId =
+      kDebugMode
+          ? 'ca-app-pub-3940256099942544/6300978111' // Test banner ad unit ID
+          : 'ca-app-pub-7237364784563380/2930000101'; // Replace with your real ad unit ID
 
-  static const String _interstitialAdUnitId = kDebugMode
-    ? 'ca-app-pub-3940256099942544/1033173712' // Test interstitial ad unit ID  
-    : 'ca-app-pub-3940256099942544/1033173712'; // Replace with your real ad unit ID
+  static const String _interstitialAdUnitId =
+      kDebugMode
+          ? 'ca-app-pub-3940256099942544/1033173712' // Test interstitial ad unit ID
+          : 'ca-app-pub-7237364784563380/2930000101'; // Replace with your real ad unit ID
 
   Future<void> initialize() async {
     await MobileAds.instance.initialize();

@@ -35,6 +35,7 @@ class _GoalCreationScreenState extends State<GoalCreationScreen> {
         backgroundColor: Colors.lightBlue.shade50,
       ),
       backgroundColor: Colors.lightBlue.shade50,
+      resizeToAvoidBottomInset: true,
       body: Consumer2<GoalProvider, SettingsProvider>(
         builder: (context, goalProvider, settingsProvider, child) {
           return Column(
@@ -156,33 +157,59 @@ class _GoalCreationScreenState extends State<GoalCreationScreen> {
   Future<void> _saveGoalAndSteps() async {
     final goalProvider = context.read<GoalProvider>();
     
-    final success = await goalProvider.addGoal(_currentGoal!);
-    if (success) {
-      final goals = goalProvider.goals;
-      final savedGoal = goals.first;
-      
-      // Add steps to the saved goal
-      for (int i = 0; i < _steps.length; i++) {
-        final step = _steps[i].copyWith(goalId: savedGoal.id, order: i + 1);
-        await goalProvider.addStep(step);
+    try {
+      final success = await goalProvider.addGoal(_currentGoal!);
+      if (success) {
+        final goals = goalProvider.goals;
+        if (goals.isNotEmpty) {
+          final savedGoal = goals.first;
+          
+          // Add steps to the saved goal
+          for (int i = 0; i < _steps.length; i++) {
+            final step = _steps[i].copyWith(goalId: savedGoal.id, order: i + 1);
+            await goalProvider.addStep(step);
+          }
+
+          // Reload all goals and steps to ensure data consistency
+          await goalProvider.loadGoals();
+
+          if (context.mounted) {
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
+            final mainNavigation = MainNavigationInherited.of(context);
+            
+            scaffoldMessenger.showSnackBar(
+              const SnackBar(
+                content: Text('目標が作成されました！'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            
+            _resetForm();
+            mainNavigation?.navigateToIndex(0);
+          }
+        }
+      } else {
+        // Handle the case when goal creation fails
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('目標の作成に失敗しました。もう一度お試しください。'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
       }
-
-      // Reload all goals and steps to ensure data consistency
-      await goalProvider.loadGoals();
-
+    } catch (e) {
+      // Handle any unexpected errors
       if (context.mounted) {
-        final scaffoldMessenger = ScaffoldMessenger.of(context);
-        final mainNavigation = MainNavigationInherited.of(context);
-        
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('目標が作成されました！'),
-            backgroundColor: Colors.green,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エラーが発生しました: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
-        
-        _resetForm();
-        mainNavigation?.navigateToIndex(0);
       }
     }
   }
@@ -243,24 +270,31 @@ class _GoalCreationStepOneState extends State<GoalCreationStepOne> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _titleFocusNode = FocusNode();
+  final _descriptionFocusNode = FocusNode();
   DateTime? _selectedDeadline;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _titleFocusNode.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const Text(
               'いつまでに何を達成したいですか？',
               style: TextStyle(
@@ -279,6 +313,9 @@ class _GoalCreationStepOneState extends State<GoalCreationStepOne> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _titleController,
+              focusNode: _titleFocusNode,
+              textInputAction: TextInputAction.next,
+              onFieldSubmitted: (_) => _descriptionFocusNode.requestFocus(),
               decoration: InputDecoration(
                 hintText: '例：英語でプレゼンテーションができるようになる',
                 border: OutlineInputBorder(
@@ -303,6 +340,9 @@ class _GoalCreationStepOneState extends State<GoalCreationStepOne> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _descriptionController,
+              focusNode: _descriptionFocusNode,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: '例：英語で自信を持って10分間のプレゼンテーションを行い、質疑応答にも答えられる状態',
@@ -358,7 +398,7 @@ class _GoalCreationStepOneState extends State<GoalCreationStepOne> {
                 ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -374,7 +414,9 @@ class _GoalCreationStepOneState extends State<GoalCreationStepOne> {
                 ),
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -310,156 +310,172 @@ class _StepCreationFormState extends State<StepCreationForm> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _whatToDoController = TextEditingController();
+  final _descriptionFocusNode = FocusNode();
+  final _whatToDoFocusNode = FocusNode();
   DateTime? _selectedDeadline;
 
   @override
   void dispose() {
     _descriptionController.dispose();
     _whatToDoController.dispose();
+    _descriptionFocusNode.dispose();
+    _whatToDoFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'ステップの内容',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        hintText: '例：基本的な英文法をマスターする',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'ステップの内容を入力してください';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'なにをする？',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _whatToDoController,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        hintText: '例：英文法の教材を1日1章ずつ進める、練習問題を解く',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return '具体的な行動を入力してください';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'いつまでに？',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: _selectDeadline,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade400),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _selectedDeadline != null
-                                  ? '${_selectedDeadline!.year}年${_selectedDeadline!.month}月${_selectedDeadline!.day}日'
-                                  : '期日を選択してください',
-                              style: TextStyle(
-                                color: _selectedDeadline != null
-                                    ? Colors.black
-                                    : Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
+    return SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height - 
+                     MediaQuery.of(context).viewInsets.bottom - 
+                     kToolbarHeight - 
+                     MediaQuery.of(context).padding.top - 120, // Progress indicator and ad banner space
+        ),
+        child: IntrinsicHeight(
+          child: Form(
+            key: _formKey,
+            child: Column(
               children: [
-                if (widget.onSkip != null)
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: widget.onSkip,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text('ここで設定終了'),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'ステップの内容',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _descriptionController,
+                          maxLines: 2,
+                          decoration: InputDecoration(
+                            hintText: '例：基本的な英文法をマスターする',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'ステップの内容を入力してください';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'なにをする？',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _whatToDoController,
+                          maxLines: 2,
+                          decoration: InputDecoration(
+                            hintText: '例：英文法の教材を1日1章ずつ進める、練習問題を解く',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return '具体的な行動を入力してください';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'いつまでに？',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: _selectDeadline,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade400),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  _selectedDeadline != null
+                                      ? '${_selectedDeadline!.year}年${_selectedDeadline!.month}月${_selectedDeadline!.day}日'
+                                      : '期日を選択してください',
+                                  style: TextStyle(
+                                    color: _selectedDeadline != null
+                                        ? Colors.black
+                                        : Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
                     ),
                   ),
-                if (widget.onSkip != null) const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _createStep,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue.shade400,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: Text(
-                      widget.stepNumber < 4
-                          ? '次のステップを設定'
-                          : 'ステップを追加',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      if (widget.onSkip != null)
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: widget.onSkip,
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text('ここで設定終了'),
+                          ),
+                        ),
+                      if (widget.onSkip != null) const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _createStep,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.lightBlue.shade400,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: Text(
+                            widget.stepNumber < 4
+                                ? '次のステップを設定'
+                                : 'ステップを追加',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
